@@ -67,6 +67,10 @@ export interface V3AgentToolOptions {
    * Resolved from BROWSERBASE_API_KEY env var or the Stagehand constructor.
    */
   browserbaseApiKey?: string;
+  /**
+   * Whether to enable WebMCP tool discovery and execution tools.
+   */
+  useWebMCP?: boolean;
 }
 
 /**
@@ -200,9 +204,12 @@ export function createAgentTools(v3: V3, options?: V3AgentToolOptions) {
     ),
     think: thinkTool(),
     wait: waitTool(v3, mode),
-    listWebMCPTools: listWebMCPToolsTool(v3),
-    callWebMCPTool: callWebMCPToolTool(v3),
   };
+
+  if (options?.useWebMCP) {
+    allTools.listWebMCPTools = listWebMCPToolsTool(v3);
+    allTools.callWebMCPTool = callWebMCPToolTool(v3);
+  }
 
   return filterTools(allTools, mode, excludeTools);
 }

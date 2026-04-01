@@ -143,6 +143,7 @@ export class V3AgentHandler {
         options.variables,
         options.toolTimeout,
         options.useSearch,
+        options.useWebMCP,
       );
       const allTools: ToolSet = { ...tools, ...this.mcpTools };
 
@@ -647,6 +648,7 @@ export class V3AgentHandler {
     variables?: Variables,
     toolTimeout?: number,
     useSearch?: boolean,
+    useWebMCP?: boolean,
   ) {
     const provider = this.llmClient?.getLanguageModel?.()?.provider;
     return createAgentTools(this.v3, {
@@ -659,6 +661,7 @@ export class V3AgentHandler {
       toolTimeout,
       useSearch,
       browserbaseApiKey: useSearch ? this.v3.browserbaseApiKey : undefined,
+      useWebMCP,
     });
   }
 

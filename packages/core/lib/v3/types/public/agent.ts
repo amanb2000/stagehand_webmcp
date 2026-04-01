@@ -416,6 +416,25 @@ export interface AgentExecuteOptionsBase {
    * ```
    */
   useSearch?: boolean;
+  /**
+   * Enable WebMCP tool discovery and execution.
+   * When set to true, the agent gains access to `listWebMCPTools` and `callWebMCPTool`
+   * tools that interact with tools registered on the page via the WebMCP
+   * `navigator.modelContextTesting` API.
+   *
+   * Requires a browser with WebMCP support (Chrome 146+ with the experimental flag,
+   * or a page using the `@mcp-b/webmcp-polyfill`).
+   *
+   * @experimental
+   * @example
+   * ```typescript
+   * const result = await agent.execute({
+   *   instruction: "Discover and use the tools this page provides",
+   *   useWebMCP: true,
+   * });
+   * ```
+   */
+  useWebMCP?: boolean;
 }
 
 /**
