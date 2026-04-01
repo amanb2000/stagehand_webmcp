@@ -65,31 +65,45 @@ export const callWebMCPToolTool = (v3: V3) =>
       name: z.string().describe("The name of the WebMCP tool to call."),
       argumentsJson: z
         .string()
-        .optional()
         .describe(
-          'JSON string of arguments to pass to the tool, e.g. \'{"query":"flights"}\'. Defaults to "{}".',
+          'A JSON string of the arguments to pass to the tool. Must be valid JSON matching the tool\'s inputSchema. Example: \'{"origin":"SFO","destination":"JFK","tripType":"one-way","outboundDate":"2025-06-15","inboundDate":"2025-06-15","passengers":1}\'',
         ),
     }),
     execute: async ({ name, argumentsJson }) => {
       try {
         v3.logger({
           category: "agent",
-          message: `Agent calling WebMCP tool: ${name}`,
+          message: `Agent calling WebMCP tool: ${name} with args: ${argumentsJson}`,
           level: 1,
         });
         const page = await v3.context.awaitActivePage();
-        const argsJson = argumentsJson ?? "{}";
-        const result = await page.evaluate(
-          (toolName: string, toolArgs: string) => {
-            const testing = (navigator as any).modelContextTesting;
-            if (!testing) return { error: "WebMCP not available" };
-            return testing.executeTool(toolName, toolArgs);
-          },
-          name,
-          argsJson,
-        );
+        const argsJson = argumentsJson;
+        const script = `(async () => {
+          const testing = navigator.modelContextTesting;
+          if (!testing) return JSON.stringify({ error: "WebMCP not available" });
+          try {
+            const raw = await testing.executeTool(${JSON.stringify(name)}, ${JSON.stringify(argsJson)});
+            return typeof raw === "string" ? raw : JSON.stringify(raw);
+          } catch (e) {
+            return JSON.stringify({ error: e?.message ?? String(e) });
+          }
+        })()`;
+        const resultJson = await page.evaluate(script);
 
-        return { success: true, result };
+        v3.logger({
+          category: "agent",
+          message: `WebMCP tool ${name} returned: ${resultJson}`,
+          level: 1,
+        });
+
+        let parsed: unknown;
+        try {
+          parsed = JSON.parse(resultJson as string);
+        } catch {
+          parsed = resultJson;
+        }
+
+        return { success: true, result: parsed };
       } catch (error) {
         return {
           success: false,
