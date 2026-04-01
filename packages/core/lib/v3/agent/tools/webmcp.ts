@@ -65,19 +65,21 @@ export const callWebMCPToolTool = (v3: V3) =>
       name: z.string().describe("The name of the WebMCP tool to call."),
       argumentsJson: z
         .string()
+        .optional()
         .describe(
-          'A JSON string of the arguments to pass to the tool. Must be valid JSON matching the tool\'s inputSchema. Example: \'{"origin":"SFO","destination":"JFK","tripType":"one-way","outboundDate":"2025-06-15","inboundDate":"2025-06-15","passengers":1}\'',
+          'A JSON string of the arguments to pass to the tool. Must be valid JSON matching the tool\'s inputSchema. Omit or pass "{}" for tools with no parameters. Example: \'{"origin":"SFO","destination":"JFK","tripType":"one-way","outboundDate":"2025-06-15","inboundDate":"2025-06-15","passengers":1}\'',
         ),
     }),
     execute: async ({ name, argumentsJson }) => {
+      const argsJson =
+        !argumentsJson || argumentsJson.trim() === "" ? "{}" : argumentsJson;
       try {
         v3.logger({
           category: "agent",
-          message: `Agent calling WebMCP tool: ${name} with args: ${argumentsJson}`,
+          message: `Agent calling WebMCP tool: ${name} with args: ${argsJson}`,
           level: 1,
         });
         const page = await v3.context.awaitActivePage();
-        const argsJson = argumentsJson;
         const script = `(async () => {
           const testing = navigator.modelContextTesting;
           if (!testing) return JSON.stringify({ error: "WebMCP not available" });
