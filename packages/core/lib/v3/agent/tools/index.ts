@@ -16,6 +16,7 @@ import { fillFormVisionTool } from "./fillFormVision.js";
 import { thinkTool } from "./think.js";
 import { searchTool as browserbaseSearchTool } from "./browserbaseSearch.js";
 import { searchTool as braveSearchTool } from "./braveSearch.js";
+import { listWebMCPToolsTool, callWebMCPToolTool } from "./webmcp.js";
 
 import type { ToolSet, InferUITools } from "ai";
 import type { V3 } from "../../v3.js";
@@ -199,6 +200,8 @@ export function createAgentTools(v3: V3, options?: V3AgentToolOptions) {
     ),
     think: thinkTool(),
     wait: waitTool(v3, mode),
+    listWebMCPTools: listWebMCPToolsTool(v3),
+    callWebMCPTool: callWebMCPToolTool(v3),
   };
 
   return filterTools(allTools, mode, excludeTools);
